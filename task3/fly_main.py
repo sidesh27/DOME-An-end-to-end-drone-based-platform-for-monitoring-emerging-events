@@ -4,7 +4,7 @@ make the drones fly around the given waypoints
 """
 
 from tello_drone import Tello_drone
-from grid import Grid
+#from grid import Grid
 import time
 import pygame
 import os
@@ -49,14 +49,14 @@ if __name__ == "__main__":
         #         main_drone.add_waypoints_database()
 
         for _ in range(2): #number of rounds
-            for i in range(main_drone.total_waypoints):
-                w = main_drone.waypoints[i]
+            for w in main_drone.waypoints:
+                #w = main_drone.waypoints[i]
                 print(w)
                 main_drone.prev_waypoint = main_drone.current_waypoint
                 main_drone.current_waypoint = w
                 #main_drone.move()
                 main_drone.move_direct()
-                w_i = i
+                #w_i = i
 
             main_drone.prev_waypoint = main_drone.current_waypoint
             main_drone.current_waypoint = main_drone.base_waypoint # comes to base to check if there are new waytpoints
@@ -65,12 +65,12 @@ if __name__ == "__main__":
             time.sleep(5)
 
             main_drone.add_waypoints_database()
-            for i in range(w_i+1, main_drone.total_waypoints):
-                w = main_drone.waypoints[i]
-                print(w)
-                main_drone.prev_waypoint = main_drone.current_waypoint
-                main_drone.current_waypoint = w
-                main_drone.move_direct()
+            # for i in range(w_i+1, main_drone.total_waypoints):
+            #     w = main_drone.waypoints[i]
+            #     print(w)
+            #     main_drone.prev_waypoint = main_drone.current_waypoint
+            #     main_drone.current_waypoint = w
+            #     main_drone.move_direct()
 
         print("landing")
         main_drone.land()

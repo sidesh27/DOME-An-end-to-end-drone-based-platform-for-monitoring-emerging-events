@@ -63,15 +63,22 @@ class Tello_drone:
         # # current angle (in degrees) the drone is traveling in
         self.angle = 0
 
+        self.image_no = 0
+        self.fire_no = 0
+
         # list of waypoints the drone must fly to
         # includes the start as the first waypoint
         self.total_waypoints = 0
-        self.waypoints = {}
+        self.waypoints = []
         self.base_waypoint = {'x': '0', 'y': '0', 'z': '100'}
 
         # the current waypoint the drone is on
         self.prev_waypoint = {'x': '0', 'y': '0', 'z': '100'}
         self.current_waypoint = {'x': '0', 'y': '0', 'z': '100'}
+
+        self.x = int(self.current_waypoint["x"])
+        self.y = int(self.current_waypoint["y"])
+        self.z = int(self.current_waypoint["z"])
 
         self.waypointsdb = client["waypoints_new"]
         # Create Collection (table) called currentWaypoints
@@ -133,11 +140,11 @@ class Tello_drone:
     def add_waypoints_database(self):
         # adds all of the waypoints from the database (client)
         ##FROM MONGO WITH SEQUENCE
-        new_waypoints = list(self.waypointsCollection.find())
-        if len(new_waypoints) > 0:
-            for w in new_waypoints:
-                self.waypoints[int(w["order"])] = w
-                self.total_waypoints = max(self.total_waypoints, int(w["order"])+1)
+        # new_waypoints = list(self.waypointsCollection.find())
+        # if len(new_waypoints) > 0:
+        #     for w in new_waypoints:
+        #         self.waypoints[int(w["order"])] = w
+        #         self.total_waypoints = max(self.total_waypoints, int(w["order"])+1)
 
         ##FROM MONGO OLD
         # new_waypoints = list(self.waypointsCollection.find({"read": "0"}))
@@ -151,14 +158,13 @@ class Tello_drone:
         #     return False
 
         ## FROM SERVER
-        # url = "http://localhost:5000/get_data?collection_name=currentWaypoints"
-        # response = requests.get(url)
-        # new_waypoints = response.json()['result']
-        # if len(new_waypoints) > 0:
-        #     self.waypoints = self.waypoints + new_waypoints
-        #     return True
-        # else:
-        #     return False
+        url = "http://localhost:5555/waypoint"
+        response = requests.get(url)
+        new_waypoints = response.json()
+        if len(new_waypoints) > 0:
+            for w in new_waypoints:
+                self.waypoints = new_waypoints
+                self.total_waypoints += 1
 
                     
         # FOR LATER
@@ -326,10 +332,11 @@ class Tello_drone:
         self.x = int(self.current_waypoint["x"])
         self.y = int(self.current_waypoint["y"])
 
-        if abs(u_d_distance) >= 10:
+        if abs(u_d_distance) >= 20:
             self.drone.send_control_command("{} {}".format('up' if u_d_distance >=0 else 'down', abs(u_d_distance)),timeout = 40)
             self.drone.send_rc_control(0,0,0,0)
-            self.z = int(self.current_waypoint["z"])
+        
+        self.z = int(self.current_waypoint["z"])
 
         self.hover()
         ix = self.upload_current_frame()
@@ -376,7 +383,9 @@ class Tello_drone:
         frame = cv2.flip(frame, 0)
 
         # stores image locally
-        cv2.imwrite(f'test_images/image_waypoint_{num_images}.png', frame)
+        cv2.imwrite(f'image_folder/image_waypoint_{self.image_no}.png', frame)
+        cv2.imwrite(f'image_local/image_waypoint_{self.image_no}.png', frame)
+        self.image_no += 1
 
         # crops image
         # image_processing.crop(f'test_images/image_waypoint_{num_images}.png',0,600,0,900)
@@ -388,7 +397,7 @@ class Tello_drone:
         # stores path to image and other relevant metadata in the database
         self.imageCollection.insert_one(
             {
-                "path": f'./test_images/image_waypoint_{num_images}.png',
+                "path": f'./image_folder/image_waypoint_{num_images}.png',
                 "location": (round(self.x),round(self.y),round(self.z)),
                 "time": "to be implemented"
             }
@@ -397,15 +406,17 @@ class Tello_drone:
         return num_images
 
     def upload_fire_details(self, image_num):
-        fire_list = detect_fire( f'./test_images/image_waypoint_{image_num}.png', f'./test_images_results/image_waypoint_{image_num}_results.png')
+        fire_list = detect_fire( f'./image_local/image_waypoint_{self.image_no-1}.png', f'./image_local/image_waypoint_{self.image_no-1}_results.png')
         fires = calc_location_fire((self.x, self.y, self.z), fire_list)
         fire_details = {"location" : {"x": self.x, "y": self.y, "z": self.z},
                         "fires" : fires,
                         "time" : datetime.now().strftime("%H:%M:%S")
                         }
+        print("fire ", self.fire_no, " ",fire_details)
 
-        with open(f'./fire_details/fire_data_{image_num}.json', 'w') as f:
+        with open(f'./fire_folder/fire_data_{self.fire_no}.json', 'w') as f:
             json.dump(fire_details, f)
+        self.fire_no += 1
 
 
     # Get functions
