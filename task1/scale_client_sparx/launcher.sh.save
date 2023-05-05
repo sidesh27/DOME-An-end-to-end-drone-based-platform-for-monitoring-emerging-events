@@ -1,0 +1,3 @@
+cd /
+cd home/pi/Desktop/scale_client_sparx
+sudo @reboot sh /home/pi/bbt/launcher.sh >/home/pi/logs/cronlog 2>&1

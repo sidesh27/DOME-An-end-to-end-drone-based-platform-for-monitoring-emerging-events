@@ -1,0 +1,60 @@
+# This configuration spins up a client with dummy sensors
+# Ideal for testing on a laptop :)
+
+# Remember that the LogEventSink runs automatically...
+Main:
+    # Here we include our default MqttEventSink configuration for uploading events to an MQTT broker
+    include_config_files: ["mqtt_config.yml"]
+
+EventSinks:
+    # Store events in a local MySQL database
+    #MySQLDatabase:
+      #class: "mysql_event_sink.MySQLEventSink"
+      #dbname: "scale_client"
+      #username: "scale_usr"
+      #password: "admin"
+
+Applications:
+        #    Test:
+      # This test app tries to increment the temperature reading by 1 and adds a '1' to the end of the heartbeat.
+      # class: "test_application.TestApplication"
+      # subscriptions: ["temperature", "heartbeat"]
+      # Thread:
+      # Good to verify that threaded applications will run properly.
+      #  class: "dummy_threaded_application.DummyThreadedApplication"
+    #MySQLDatabase:
+      #class: "mysql_maintainer.MySQLMaintainer"
+      #dbname: "scale_client"
+      #username: "scale_usr"
+      #password: "admin"
+
+Sensors:
+    #GasSensor0:
+      #class: "environment.gas_physical_sensor.GasPhysicalSensor"
+      #sensors: "gas0"
+      #analog_port: 0
+      #threshold: 0
+
+    #GasSensor1:
+      #class: "environment.gas_physical_sensor.GasPhysicalSensor"
+      #sensors: "gas1"
+      #analog_port: 1
+      #threshold: 0
+
+    #GasSensor2:
+      #class: "environment.gas_physical_sensor.GasPhysicalSensor"
+      #sensors: "gas2"
+      #analog_port: 2
+      #threshold: 0
+
+    #GasSensor3:
+      #class: "environment.gas_physical_sensor.GasPhysicalSensor"
+      #sensors: "gas3"
+      #analog_port: 3
+      #threshold: 0
+
+    Camera:
+      class: "camera.camera_physical_sensor.CameraPhysicalSensor"
+      sensors: "cam"
+      interval: 500000
+
