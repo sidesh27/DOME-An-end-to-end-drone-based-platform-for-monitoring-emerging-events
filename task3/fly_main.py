@@ -12,6 +12,7 @@ import asyncio
 import cv2
 import signal
 import time
+import sys
 
 
 
@@ -48,7 +49,7 @@ if __name__ == "__main__":
         #     else:
         #         main_drone.add_waypoints_database()
 
-        for _ in range(2): #number of rounds
+        for _ in range(sys.argv[1]): #number of rounds
             for w in main_drone.waypoints:
                 #w = main_drone.waypoints[i]
                 print(w)
